@@ -5,91 +5,72 @@ last updated: 8/6/20
 """
 
 import pygame
-import random
+import pearl_assets
 
-# global variables
-WIDTH = 700
-HEIGHT = 700
-black = (0, 0, 0)
-red = (255, 0, 0)
-white = (255, 255, 255)
-squares = {}
-
-
-# my functions
-def draw_black_pearl(surface: pygame.Surface, key: int):
-    w, h = squares[key]
-    w += (WIDTH // 7) // 2
-    h += (HEIGHT // 7) // 2
-    pygame.draw.circle(surface, black, (w, h), 35)
-
-
-def draw_white_pearl(surface: pygame.Surface, key: int):
-    w, h = squares[key]
-    w += (WIDTH // 7) // 2
-    h += (HEIGHT // 7) // 2
-    pygame.draw.circle(surface, black, (w, h), 35, 2)
-
-
-def new_game(surface: pygame.Surface):
-    # define the square locations
-    index = 0
-    for vert in range(0, HEIGHT, HEIGHT // 7):
-        for horz in range(0, WIDTH, WIDTH // 7):
-            squares[index] = (horz, vert)
-            index += 1
-
-    # color the background white
-    surface.fill(white)
-
-    # draw some vertical lines
-    for i in range(WIDTH // 7, WIDTH, WIDTH // 7):
-        pygame.draw.line(surface, black, (i, 0), (i, HEIGHT), 2)
-
-    # draw some horizontal lines
-    for j in range(HEIGHT // 7, HEIGHT, HEIGHT // 7):
-        pygame.draw.line(surface, black, (0, j), (HEIGHT, j), 2)
-
-    # set some pearls on the board
-    for k in range(0, 9):
-        position = random.randint(0, len(squares) - 1)
-        if k % 2 == 0:
-            draw_white_pearl(surface, position)
-        else:
-            draw_black_pearl(surface, position)
-
+# constants
+WIDTH = pearl_assets.WIDTH
+HEIGHT = pearl_assets.HEIGHT
 
 """ GAME CODE STARTS HERE"""
 
 # initialize the game
 pygame.init()
 
+# load font
+font_med = pygame.font.Font('OpenSans-Semibold.ttf', 60)
+font_large = pygame.font.Font('OpenSans-Semibold.ttf', 90)
+
 # set the screen size
 screen = pygame.display.set_mode([WIDTH, HEIGHT])
 
 # game loop
 running = True
+game_started = False
 while running:
-
-    # load the font
-    if pygame.font:
-        font = pygame.font.Font('OpenSans-Semibold.ttf', 36)
 
     # detect quits
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             running = False
 
+        # space bar to start the game
         if event.type == pygame.KEYDOWN and event.key == pygame.K_SPACE:
             # create a surface
             background = pygame.Surface(screen.get_size())
+            background.fill(pearl_assets.WHITE)
 
             # call the new game routine which draws the lines
-            new_game(background)
+            # setup the game
+            p = pearl_assets.new_game(background)
 
             # draw the frame/screen
             screen.blit(background, (0, 0))
 
+            # set the game started flag
+            game_started = True
+
+        # right mouse click to place a piece
+        if event.type == pygame.MOUSEBUTTONDOWN and game_started and not p.game_won:
+            position = pygame.mouse.get_pos()
+            pearl = p.get_square_from_click(position)
+            quadrant = pearl_assets.get_quadrant_from_click(position, pearl)
+
+            if p.is_valid_move(pearl, quadrant):
+                p.draw_straight_segment(background, pearl, quadrant)
+                screen.blit(background, (0, 0))
+
+            # check for a winning condition
+            if p.check_for_winning():
+                text_surface = font_med.render("YOU WON!", True, pearl_assets.BLACK)
+                text_rect = text_surface.get_rect()
+                text_rect.center = ((WIDTH // 2), (HEIGHT // 2))
+                screen.blit(text_surface, text_rect)
+
+        if not game_started:
+            text_surface = font_med.render("Press Space to Begin", True, pearl_assets.WHITE)
+            text_rect = text_surface.get_rect()
+            text_rect.center = ((WIDTH // 2), (HEIGHT // 2))
+            screen.blit(text_surface, text_rect)
     pygame.display.flip()
 
 pygame.quit()
