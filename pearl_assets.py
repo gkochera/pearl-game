@@ -261,12 +261,11 @@ def new_game(surface: pygame.Surface):
         pieces_placed_at.append(position)
 
         pearl = p.squares[position]
-        print(k, position)
         if k % 2 == 0:
             draw_pearl(surface, pearl, WHITE)
         else:
             draw_pearl(surface, pearl, BLACK)
-    print()
+
     return p
 
 

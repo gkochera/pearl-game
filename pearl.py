@@ -143,7 +143,6 @@ while running:
                 p.draw_straight_segment(background, pearl, quadrant)
                 screen.blit(background, (0, 0))
                 p.set_move_constraints()
-                p.game_status()
 
                 # check for a winning condition
                 if p.check_for_winning():
