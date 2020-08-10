@@ -47,4 +47,6 @@ as the verifier. In other words
 > 1. the path turns at every black pearl, but does not turn immediately before or after
 > 2. the path does not turn at any white pearl, but does turn immediately before or after
 
+To arrive at the fact that the Pearl Puzzle is NP-Complete, we can reduce the Hamiltonian Cycle Problem to an instance of
+the Pearl Puzzle problem. See the submitted PDF for the proof.
 
