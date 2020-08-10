@@ -268,6 +268,34 @@ def new_game(surface: pygame.Surface):
 
     return p
 
+def new_debug_game(surface: pygame.Surface):
+    """Creates a PearlGame instance, draws the lines, popluates the board and returns the game instance. This call will
+    remove the rules and allow pieces to be placed freely or with specified input from the commandline."""
+    # create a pearl game instance
+    p = PearlGame()
+
+    # define the square locations
+    index = 0
+    for vert in range(0, HEIGHT, ROW_HEIGHT):
+        for horz in range(0, WIDTH, COL_WIDTH):
+            row = index // ROWS
+            col = index % ROWS
+            p.squares[index] = PearlBox((horz, vert), row, col, index, (horz + COL_CENTER, vert + ROW_CENTER))
+            index += 1
+
+    # color the background white
+    surface.fill(WHITE)
+
+    # draw some vertical lines
+    for i in range(COL_WIDTH, WIDTH, COL_WIDTH):
+        pygame.draw.line(surface, BLACK, (i, 0), (i, HEIGHT), 2)
+
+    # draw some horizontal lines
+    for j in range(ROW_HEIGHT, HEIGHT, ROW_HEIGHT):
+        pygame.draw.line(surface, BLACK, (0, j), (HEIGHT, j), 2)
+
+    return p
+
 
 def draw_pearl(surface: pygame.Surface, pearl: PearlBox, color):
     w, h = pearl.position

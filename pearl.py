@@ -104,6 +104,7 @@ screen = pygame.display.set_mode([WIDTH, HEIGHT])
 # game loop
 running = True
 game_started = False
+debug = False
 while running:
 
     # detect quits
@@ -127,35 +128,74 @@ while running:
             # set the game started flag
             game_started = True
 
+        # d for special debug mode
+        if event.type == pygame.KEYDOWN and event.key == pygame.K_d:
+            debug = True
+            # create a surface
+            background = pygame.Surface(screen.get_size())
+            background.fill(pearl_assets.WHITE)
+
+            # call the debug version of the game routine
+            d = pearl_assets.new_debug_game(background)
+            print(debug)
+            # draw the frame/screend
+            screen.blit(background, (0, 0))
+
+            # set the game started flag
+            game_started = True
+
         # x to quit to main screen
         if event.type == pygame.KEYDOWN and event.key == pygame.K_x:
+            debug = False
             game_started = False
 
         if event.type == pygame.KEYDOWN and event.key == pygame.K_q:
             running = False
 
-        # right mouse click to place a piece
-        if event.type == pygame.MOUSEBUTTONDOWN and game_started and not p.game_won:
-            position = pygame.mouse.get_pos()
-            pearl = p.get_square_from_click(position)
-            quadrant = pearl_assets.get_quadrant_from_click(position, pearl)
-            if p.is_valid_move(pearl, quadrant):
-                p.draw_straight_segment(background, pearl, quadrant)
+        # regular game routine when not in debug mode
+        if not debug:
+
+            # right mouse click to place a piece
+            if event.type == pygame.MOUSEBUTTONDOWN and game_started and not p.game_won:
+                position = pygame.mouse.get_pos()
+                pearl = p.get_square_from_click(position)
+                quadrant = pearl_assets.get_quadrant_from_click(position, pearl)
+                if p.is_valid_move(pearl, quadrant):
+                    p.draw_straight_segment(background, pearl, quadrant)
+                    screen.blit(background, (0, 0))
+                    p.set_move_constraints()
+
+                    # check for a winning condition
+                    if p.check_for_winning():
+                        text_surface = font_large.render("YOU WON!", True, pearl_assets.BLACK)
+                        text_rect = text_surface.get_rect()
+                        text_rect.center = ((WIDTH // 2), (HEIGHT // 2))
+                        screen.blit(text_surface, text_rect)
+
+                    if p.check_for_losing():
+                        text_surface = font_large.render("YOU LOST!", True, pearl_assets.RED)
+                        text_rect = text_surface.get_rect()
+                        text_rect.center = ((WIDTH // 2), (HEIGHT // 2))
+                        screen.blit(text_surface, text_rect)
+
+        # able to place tokens freely in debug mode
+        else:
+
+            if event.type == pygame.MOUSEBUTTONDOWN:
+                position = pygame.mouse.get_pos()
+                square = d.get_square_from_click(position)
+                pearl = d.get_square_from_index(square.index)
+                if event.button == 3:
+                    pearl.color = pearl_assets.WHITE
+                    pearl_assets.draw_pearl(background, pearl, pearl_assets.WHITE)
+                if event.button == 2:
+                    quadrant = pearl_assets.get_quadrant_from_click(position, pearl)
+                    d.draw_straight_segment(background, pearl, quadrant)
+                if event.button == 1:
+                    pearl.color = pearl_assets.BLACK
+                    pearl_assets.draw_pearl(background, pearl, pearl_assets.BLACK)
+
                 screen.blit(background, (0, 0))
-                p.set_move_constraints()
-
-                # check for a winning condition
-                if p.check_for_winning():
-                    text_surface = font_large.render("YOU WON!", True, pearl_assets.BLACK)
-                    text_rect = text_surface.get_rect()
-                    text_rect.center = ((WIDTH // 2), (HEIGHT // 2))
-                    screen.blit(text_surface, text_rect)
-
-                if p.check_for_losing():
-                    text_surface = font_large.render("YOU LOST!", True, pearl_assets.RED)
-                    text_rect = text_surface.get_rect()
-                    text_rect.center = ((WIDTH // 2), (HEIGHT // 2))
-                    screen.blit(text_surface, text_rect)
 
         if not game_started:
             splash_screen()
